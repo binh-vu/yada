@@ -6,7 +6,7 @@
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-Yada (Yet Another Dataclass Argument Parser!) is a library to automatically generate `argparse.ArgumentParser` given dataclasses. Compared to some available options such as: [Huggingface's HfArgumentParser](https://huggingface.co/transformers/v4.2.2/_modules/transformers/hf_argparser.html), [argparse_dataclass](https://github.com/mivade/argparse_dataclass), and [tap](https://github.com/swansonk14/typed-argument-parser), it offers the following benefits:
+Yada (**Y**et **A**nother **D**ataclass **A**rgument Parser!) is a library to automatically generate `argparse.ArgumentParser` given data classes. Compared to some available options such as: [Huggingface's HfArgumentParser](https://huggingface.co/transformers/v4.2.2/_modules/transformers/hf_argparser.html), [argparse_dataclass](https://github.com/mivade/argparse_dataclass), and [tap](https://github.com/swansonk14/typed-argument-parser), it offers the following benefits:
 
 1. Static Type Checking
 2. Nested data classes and complex types
