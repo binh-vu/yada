@@ -4,6 +4,7 @@ from dataclasses import MISSING, dataclass
 from typing import (
     Any,
     Callable,
+    Dict,
     List,
     Type,
 )
@@ -38,7 +39,7 @@ class SingleFieldParser(NamespaceParser):
 @dataclass
 class MultiFieldParser(NamespaceParser):
     type: Type
-    field_names: List[NamespaceParser]
+    field_parsers: Dict[str, NamespaceParser]
     is_default_null: bool
     is_nullable: bool
     null_argname: str
@@ -75,11 +76,11 @@ class MultiFieldParser(NamespaceParser):
         """
         if not self.is_nullable:
             # case 1 or 2.A
-            values = []
-            for f in self.field_names:
+            obj = {}
+            for fname, f in self.field_parsers.items():
                 value = f.deserialize(ns)
-                values.append(value)
-            return self.type(*values)
+                obj[fname] = value
+            return self.type(**obj)
 
         if getattr(ns, self.null_argname) is None:
             # null_argname is presented, then the value is None
@@ -88,21 +89,21 @@ class MultiFieldParser(NamespaceParser):
         # distinguish between 2.B and 2.C
         if not self.is_default_null:
             # case 2.C
-            values = []
-            for f in self.field_names:
+            obj = {}
+            for name, f in self.field_parsers.items():
                 value = f.deserialize(ns)
-                values.append(value)
-            return self.type(*values)
+                obj[name] = value
+            return self.type(**obj)
 
         # case 2.B
-        values = []
-        if all(not f.is_presented(ns) for f in self.field_names):
+        obj = {}
+        if all(not f.is_presented(ns) for f in self.field_parsers.values()):
             return None
 
-        for f in self.field_names:
+        for fname, f in self.field_parsers.items():
             value = f.deserialize(ns)
-            values.append(value)
-        return self.type(*values)
+            obj[fname] = value
+        return self.type(**obj)
 
     def is_presented(self, ns: argparse.Namespace):
-        return any(f.is_presented(ns) for f in self.field_names)
+        return any(f.is_presented(ns) for f in self.field_parsers.values())

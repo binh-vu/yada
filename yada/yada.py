@@ -165,7 +165,7 @@ class YadaParser(Generic[C, R]):
 
         deser = MultiFieldParser(
             type=dclass,
-            field_names=[],
+            field_parsers={},
             is_default_null=default_instance is None,
             is_nullable=is_nullable,
             null_argname=argname.get_fieldname(),
@@ -186,6 +186,7 @@ class YadaParser(Generic[C, R]):
                     ".".join(argname.names),
                     dclass.__qualname__,
                 )
+                continue
 
             field_argname = argname.add(field.name)
             field_type = type_hints[field.name]
@@ -196,14 +197,12 @@ class YadaParser(Generic[C, R]):
                 field_default = getattr(default_instance, field.name)
             field_required = field_default is MISSING and not is_nullable
 
-            deser.field_names.append(
-                self.add_field(
-                    field_argname,
-                    field,
-                    field_type,
-                    is_required=field_required,
-                    default_value=field_default,
-                )
+            deser.field_parsers[field.name] = self.add_field(
+                field_argname,
+                field,
+                field_type,
+                is_required=field_required,
+                default_value=field_default,
             )
 
         return deser
@@ -275,7 +274,7 @@ class YadaParser(Generic[C, R]):
         if origin is list or origin is set:
             assert len(args) == 1
             self.parser.add_argument(
-                f"--{argname}",
+                argname.get_argname(),
                 nargs="*",
                 **self.get_add_argument_options(
                     argname, field, args[0], is_required, is_nullable=False
@@ -293,7 +292,7 @@ class YadaParser(Generic[C, R]):
 
         if origin is dict:
             self.parser.add_argument(
-                f"--{argname}",
+                argname.get_argname(),
                 **self.get_add_argument_options(
                     argname, field, field_type, is_required, is_nullable=False
                 ),
