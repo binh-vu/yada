@@ -62,18 +62,20 @@ class YadaParser(Generic[C, R]):
             `type_constructors` or `field_constructors` to provide a custom constructor in this case.
 
     Args:
-        param_types: one or more classes holding parameters. Properties of each class will be converted to arguments.
+        classes: one or more classes holding parameters. Properties of each class will be converted to arguments.
             When params is a sequence of classes, the properties of all classes will be in the same namespace.
             When params is a mapping of key and classes, the key will act as the namespace and the arguments will
             be prefixed with the key and the dot character.
 
-        underscore_to_dash: whether to convert underscore to dash in the argument name.
+        dash: whether to convert underscore to dash in the argument name.
 
-        type_constructors: a mapping of type to a function that takes a string and return an instance of that type.
+        levelsep: the separator used to separate nested argument (default is `.`).
+
+        type_parsers: a mapping of type to a function that takes a string and return an instance of that type.
             This is useful when the type's constructor cannot be constructed from a string, for example, a dataclass of
             more than one field
 
-        field_constructors: a mapping of a nested field (separated by dot) to a function that takes a string and
+        field_parsers: a mapping of a nested field (separated by dot) to a function that takes a string and
             return an instance of the field's type.
     """
 
@@ -330,3 +332,47 @@ class YadaParser(Generic[C, R]):
             else:
                 options["type"] = wrapper(field_type)
         return options
+
+
+
+R1 = TypeVar("R1")
+R2 = TypeVar("R2")
+R3 = TypeVar("R3")
+R4 = TypeVar("R4")
+R5 = TypeVar("R5")
+R6 = TypeVar("R6")
+R7 = TypeVar("R7")
+R8 = TypeVar("R8")
+R9 = TypeVar("R9")
+R10 = TypeVar("R10")
+
+
+class Parser1(YadaParser[Type[R1], R1]):
+    pass
+
+class Parser2(YadaParser[Tuple[Type[R1], Type[R2]], Tuple[R1, R2]]):
+    pass
+
+class Parser3(YadaParser[Tuple[Type[R1], Type[R2], Type[R3]], Tuple[R1, R2, R3]]):
+    pass
+
+class Parser4(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4]], Tuple[R1, R2, R3, R4]]):
+    pass
+
+class Parser5(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5]], Tuple[R1, R2, R3, R4, R5]]):
+    pass
+
+class Parser6(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5], Type[R6]], Tuple[R1, R2, R3, R4, R5, R6]]):
+    pass
+
+class Parser7(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5], Type[R6], Type[R7]], Tuple[R1, R2, R3, R4, R5, R6, R7]]):
+    pass
+
+class Parser8(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5], Type[R6], Type[R7], Type[R8]], Tuple[R1, R2, R3, R4, R5, R6, R7, R8]]):
+    pass
+
+class Parser9(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5], Type[R6], Type[R7], Type[R8], Type[R9]], Tuple[R1, R2, R3, R4, R5, R6, R7, R8, R9]]):
+    pass
+
+class Parser10(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5], Type[R6], Type[R7], Type[R8], Type[R9], Type[R10]], Tuple[R1, R2, R3, R4, R5, R6, R7, R8, R9, R10]]):
+    pass

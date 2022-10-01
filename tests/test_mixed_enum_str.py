@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Union
-from yada.yada import YadaParser
 from enum import Enum
+from typing import Union
+
+import yada
 
 
 class IntervalStrategy(str, Enum):
@@ -20,7 +21,7 @@ class TrainingArguments:
 
 def test_mixed_enum_str():
     """Testing to make sure it is compatible with huggingface HfArgumentParser"""
-    parser = YadaParser(TrainingArguments)
+    parser = yada.Parser1(TrainingArguments)
     args = parser.parse_args(
         [
             "--strategy",

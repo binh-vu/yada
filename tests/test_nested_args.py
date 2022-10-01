@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal
 
-from yada.yada import YadaParser
+import yada
 
 
 @dataclass
@@ -16,7 +16,7 @@ class NestedArgs:
 
 
 def test_nested_dataclass():
-    parser = YadaParser(NestedArgs)
+    parser = yada.Parser1(NestedArgs)
     args = parser.parse_args(
         [
             "--name",

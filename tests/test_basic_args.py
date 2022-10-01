@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from yada.yada import YadaParser
+import yada
 
 
 @dataclass
@@ -11,7 +11,7 @@ class BasicArgs:
 
 
 def test_basic_dataclass():
-    parser = YadaParser(BasicArgs)
+    parser = yada.Parser1(BasicArgs)
     args = parser.parse_args(
         [
             "--integer",
