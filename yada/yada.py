@@ -33,6 +33,7 @@ from yada.argname import ArgumentName
 
 C = TypeVar("C")
 R = TypeVar("R")
+NoneType = type(None)
 
 
 class YadaParser(Generic[C, R]):
@@ -219,12 +220,23 @@ class YadaParser(Generic[C, R]):
         if origin is None or origin is Union or origin is Literal:
             if origin is Union:
                 args = get_args(field_type)
-                if all(issubclass(arg, str) for arg in args):
+
+                all_str_args = True
+                for arg in args:
+                    try:
+                        if not issubclass(arg, str):
+                            all_str_args = False
+                            break
+                    except TypeError:
+                        all_str_args = False
+                        break
+
+                if all_str_args:
                     # handle special case of Union[StrEnum, str]
                     is_nullable = False
                     field_type = str
                 else:
-                    non_null_args = [arg for arg in args if arg is not type(None)]
+                    non_null_args = [arg for arg in args if arg is not NoneType]
                     if len(non_null_args) != 1:
                         raise NotSupportedType(
                             argname,
@@ -334,7 +346,6 @@ class YadaParser(Generic[C, R]):
         return options
 
 
-
 R1 = TypeVar("R1")
 R2 = TypeVar("R2")
 R3 = TypeVar("R3")
@@ -350,29 +361,100 @@ R10 = TypeVar("R10")
 class Parser1(YadaParser[Type[R1], R1]):
     pass
 
+
 class Parser2(YadaParser[Tuple[Type[R1], Type[R2]], Tuple[R1, R2]]):
     pass
+
 
 class Parser3(YadaParser[Tuple[Type[R1], Type[R2], Type[R3]], Tuple[R1, R2, R3]]):
     pass
 
-class Parser4(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4]], Tuple[R1, R2, R3, R4]]):
+
+class Parser4(
+    YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4]], Tuple[R1, R2, R3, R4]]
+):
     pass
 
-class Parser5(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5]], Tuple[R1, R2, R3, R4, R5]]):
+
+class Parser5(
+    YadaParser[
+        Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5]],
+        Tuple[R1, R2, R3, R4, R5],
+    ]
+):
     pass
 
-class Parser6(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5], Type[R6]], Tuple[R1, R2, R3, R4, R5, R6]]):
+
+class Parser6(
+    YadaParser[
+        Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5], Type[R6]],
+        Tuple[R1, R2, R3, R4, R5, R6],
+    ]
+):
     pass
 
-class Parser7(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5], Type[R6], Type[R7]], Tuple[R1, R2, R3, R4, R5, R6, R7]]):
+
+class Parser7(
+    YadaParser[
+        Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5], Type[R6], Type[R7]],
+        Tuple[R1, R2, R3, R4, R5, R6, R7],
+    ]
+):
     pass
 
-class Parser8(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5], Type[R6], Type[R7], Type[R8]], Tuple[R1, R2, R3, R4, R5, R6, R7, R8]]):
+
+class Parser8(
+    YadaParser[
+        Tuple[
+            Type[R1],
+            Type[R2],
+            Type[R3],
+            Type[R4],
+            Type[R5],
+            Type[R6],
+            Type[R7],
+            Type[R8],
+        ],
+        Tuple[R1, R2, R3, R4, R5, R6, R7, R8],
+    ]
+):
     pass
 
-class Parser9(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5], Type[R6], Type[R7], Type[R8], Type[R9]], Tuple[R1, R2, R3, R4, R5, R6, R7, R8, R9]]):
+
+class Parser9(
+    YadaParser[
+        Tuple[
+            Type[R1],
+            Type[R2],
+            Type[R3],
+            Type[R4],
+            Type[R5],
+            Type[R6],
+            Type[R7],
+            Type[R8],
+            Type[R9],
+        ],
+        Tuple[R1, R2, R3, R4, R5, R6, R7, R8, R9],
+    ]
+):
     pass
 
-class Parser10(YadaParser[Tuple[Type[R1], Type[R2], Type[R3], Type[R4], Type[R5], Type[R6], Type[R7], Type[R8], Type[R9], Type[R10]], Tuple[R1, R2, R3, R4, R5, R6, R7, R8, R9, R10]]):
+
+class Parser10(
+    YadaParser[
+        Tuple[
+            Type[R1],
+            Type[R2],
+            Type[R3],
+            Type[R4],
+            Type[R5],
+            Type[R6],
+            Type[R7],
+            Type[R8],
+            Type[R9],
+            Type[R10],
+        ],
+        Tuple[R1, R2, R3, R4, R5, R6, R7, R8, R9, R10],
+    ]
+):
     pass

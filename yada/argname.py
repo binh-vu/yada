@@ -25,6 +25,6 @@ class ArgumentName:
     def _norm_name(self, name: str):
         if self.dash:
             if name[0].startswith("_"):
-                return "_" + name[1:].replace("-", "_")
-            return name.replace("-", "_")
+                return "_" + name[1:].replace("_", "-")
+            return name.replace("_", "-")
         return name
