@@ -46,7 +46,7 @@ jobs:
       - name: pypi publish
         run: |
           pip install twine
-          twine upload --skip-existing dist/* -u $PYPI_USER -p $PYPI_PWD
+          twine upload --skip-existing dist/* -u $PYPI_USER -p $PYPI_PWD --verbose
         env:
           PYPI_USER: __token__
           PYPI_PWD: ${{ secrets.PYPI_TOKEN }}

@@ -12,3 +12,11 @@ Yada (**Y**et **A**nother **D**ataclass **A**rgument Parser!) is a library to au
 2. Nested data classes and complex types
 3. Easy to extend and customize the parser
 4. Generate command line arguments given the data classes.
+
+## Installation
+
+Install via PyPI (requires Python 3.8+):
+
+```bash
+pip install t2-yada
+```
