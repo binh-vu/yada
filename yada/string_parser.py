@@ -1,5 +1,5 @@
 import argparse
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, Set, Tuple, Union
 
 from yada.argname import ArgumentName
 
@@ -44,9 +44,11 @@ class StringParser:
         return v
 
     @staticmethod
-    def wrap_nullable(fn: Callable):
+    def wrap_nullable(
+        fn: Callable, none_keywords: Union[Set[str], Tuple[str, ...]] = ("None", "none")
+    ):
         def wrapper(s):
-            if s in ("None", "none"):
+            if s in none_keywords:
                 return None
             return fn(s)
 

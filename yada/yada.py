@@ -1,5 +1,6 @@
 from __future__ import annotations
 import argparse
+from functools import partial
 from typing import (
     Any,
     Callable,
@@ -215,39 +216,60 @@ class YadaParser(Generic[C, R]):
         is_required: bool,
         default_value: Any,
     ) -> NamespaceParser:
+        origin_field_type = field_type
         origin = get_origin(field_type)
-        if origin is None or origin is Union or origin is Literal:
-            if origin is Union:
-                args = get_args(field_type)
+        args = get_args(field_type)
 
-                all_str_args = True
-                for arg in args:
-                    try:
-                        if not issubclass(arg, str):
-                            all_str_args = False
-                            break
-                    except TypeError:
-                        all_str_args = False
-                        break
+        # detect Optional[T] to set nullable to True
+        # then we convert field type from Optional[T] to T and process as normal
+        if origin is Union:
+            if any(arg is NoneType for arg in args):
+                args = [arg for arg in args if arg is not NoneType]
+                is_nullable = True
 
-                if all_str_args:
-                    # handle special case of Union[StrEnum, str]
-                    is_nullable = False
-                    field_type = str
-                else:
-                    non_null_args = [arg for arg in args if arg is not NoneType]
-                    if len(non_null_args) != 1:
-                        raise NotSupportedType(
-                            argname,
-                            field_type,
-                            "only `Union[X, NoneType]` (i.e., `Optional[X]`) is allowed for `Union` because"
-                            " we don't know how to parse different types from string.",
-                        )
-                    is_nullable = True
-                    field_type = non_null_args[0]
+                if len(args) == 1:
+                    # Optional[T] -> T
+                    field_type = args[0]
+                    origin = get_origin(field_type)
+                    args = get_args(field_type)
             else:
                 is_nullable = False
+        else:
+            is_nullable = False
 
+        if origin is Union:
+            all_str_args = True
+            for arg in args:
+                try:
+                    if not issubclass(arg, str):
+                        all_str_args = False
+                        break
+                except TypeError:
+                    all_str_args = False
+                    break
+
+            if all_str_args:
+                # handle special case of Union[StrEnum, str]
+                is_nullable = False
+                field_type = str
+            else:
+                raise NotSupportedType(
+                    argname,
+                    origin_field_type,
+                    "only `Union[X, NoneType]` (i.e., `Optional[X]`) is allowed for `Union` because"
+                    " we don't know how to parse different types from string.",
+                )
+            self.parser.add_argument(
+                argname.get_argname(),
+                **self.get_add_argument_options(
+                    argname, field, field_type, default_value, is_required, is_nullable
+                ),
+            )
+            return SingleFieldParser(
+                argname.get_fieldname(), default_value=default_value
+            )
+
+        if origin is None or origin is Literal:
             # not generic types
             if is_dataclass(field_type):
                 return self.add_dataclass(
@@ -263,21 +285,25 @@ class YadaParser(Generic[C, R]):
             self.parser.add_argument(
                 argname.get_argname(),
                 **self.get_add_argument_options(
-                    argname, field, field_type, is_required, is_nullable
+                    argname, field, field_type, default_value, is_required, is_nullable
                 ),
             )
             return SingleFieldParser(
                 argname.get_fieldname(), default_value=default_value
             )
 
-        args = get_args(field_type)
         if origin is list or origin is set:
             assert len(args) == 1
             self.parser.add_argument(
                 argname.get_argname(),
                 nargs="*",
                 **self.get_add_argument_options(
-                    argname, field, args[0], is_required, is_nullable=False
+                    argname,
+                    field,
+                    args[0],
+                    default_value,
+                    is_required,
+                    is_nullable=False,
                 ),
             )
             if origin is set:
@@ -294,7 +320,12 @@ class YadaParser(Generic[C, R]):
             self.parser.add_argument(
                 argname.get_argname(),
                 **self.get_add_argument_options(
-                    argname, field, field_type, is_required, is_nullable=False
+                    argname,
+                    field,
+                    field_type,
+                    default_value,
+                    is_required,
+                    is_nullable=False,
                 ),
             )
             return SingleFieldParser(
@@ -308,11 +339,30 @@ class YadaParser(Generic[C, R]):
         argname: ArgumentName,
         field: Field,
         field_type: type,
+        default_value: Any,
         is_required: bool,
         is_nullable: bool,
     ) -> dict:
         if is_nullable:
-            wrapper = StringParser.wrap_nullable
+            if field_type is str:
+                # for a string, we do not know if the value can contain "None" or "none"
+                # - if the default value is None, then at least user can choose None if
+                #   they don't pass the argument
+                # - if the default value is not None, then we need to have a way to
+                #   distinguish between None and "None" or "none"
+                if default_value is None and "none_keywords" not in field.metadata:
+                    wrapper = lambda x: x
+                else:
+                    if "none_keywords" not in field.metadata:
+                        # force to use "None" or "none" as users has no way to specify None
+                        wrapper = StringParser.wrap_nullable
+                    else:
+                        wrapper = partial(
+                            StringParser.wrap_nullable,
+                            none_keywords=set(field.metadata["none_keywords"]),
+                        )
+            else:
+                wrapper = StringParser.wrap_nullable
         else:
             wrapper = lambda x: x
 
