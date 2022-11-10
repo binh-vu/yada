@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import List, Union, Optional
+from typing import List, Optional
 
 import yada
 
@@ -46,6 +45,22 @@ class TrainArgsOptListStr:
     )
 
 
+@dataclass
+class Method:
+    name: str = field(default="method_a")
+
+
+@dataclass
+class TrainArgsOptClassNoneDefault:
+    method: Optional[Method] = None
+    method2: Optional[Method] = field(default=None)
+
+
+@dataclass
+class TrainArgsOptClassNotNoneDefault:
+    method: Optional[Method] = field(default=Method("method_b"))
+
+
 def test_optional_str_not_none_default():
     parser = yada.Parser1(TrainArgsOptStrNotNoneDefault)
     args = parser.parse_args(["--length-column-name", "abc"])
@@ -86,3 +101,21 @@ def test_optional_lst_str():
     assert args == TrainArgsOptListStr(["none"])
     args = parser.parse_args([])
     assert args == TrainArgsOptListStr(None)
+
+
+def test_optional_class_non_default():
+    parser = yada.Parser1(TrainArgsOptClassNoneDefault)
+    args = parser.parse_args(["--method.name", "method_b"])
+    assert args == TrainArgsOptClassNoneDefault(Method("method_b"), None)
+    args = parser.parse_args(["--method2.name", "method_b"])
+    assert args == TrainArgsOptClassNoneDefault(None, Method("method_b"))
+    args = parser.parse_args([])
+    assert args == TrainArgsOptClassNoneDefault(None, None)
+
+
+def test_optional_class_not_none_default():
+    parser = yada.Parser1(TrainArgsOptClassNotNoneDefault)
+    args = parser.parse_args(["--method.name", "method_c"])
+    assert args == TrainArgsOptClassNotNoneDefault(Method("method_c"))
+    args = parser.parse_args([])
+    assert args == TrainArgsOptClassNotNoneDefault(Method("method_b"))

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "t2-yada"
-version = "1.0.4"
+version = "1.0.5"
 description = "Yet another dataclass argparse"
 authors = ["Binh Vu <binh@toan2.com>"]
 license = "MIT"

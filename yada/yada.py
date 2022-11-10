@@ -275,7 +275,7 @@ class YadaParser(Generic[C, R]):
                 return self.add_dataclass(
                     field_type,
                     argname,
-                    default=MISSING,
+                    default=default_value,
                     is_nullable=is_nullable,
                 )
 
