@@ -194,8 +194,11 @@ class YadaParser(Generic[C, R]):
 
             field_default = field.default
             if default_instance is not None:
-                # we have the default value
+                # we have the default value, which may set different value from the field's default value
+                # so it has higher priority
                 field_default = getattr(default_instance, field.name)
+            elif field_default is MISSING and field.default_factory is not MISSING:
+                field_default = field.default_factory()
             field_required = field_default is MISSING and not is_nullable
 
             deser.field_parsers[field.name] = self.add_field(

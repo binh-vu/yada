@@ -61,6 +61,11 @@ class TrainArgsOptClassNotNoneDefault:
     method: Optional[Method] = field(default=Method("method_b"))
 
 
+@dataclass
+class TrainArgsOptClassNotNoneDefaultFactory:
+    method: Optional[Method] = field(default_factory=lambda: Method("method_b"))
+
+
 def test_optional_str_not_none_default():
     parser = yada.Parser1(TrainArgsOptStrNotNoneDefault)
     args = parser.parse_args(["--length-column-name", "abc"])
@@ -119,3 +124,11 @@ def test_optional_class_not_none_default():
     assert args == TrainArgsOptClassNotNoneDefault(Method("method_c"))
     args = parser.parse_args([])
     assert args == TrainArgsOptClassNotNoneDefault(Method("method_b"))
+
+
+def test_optional_class_not_none_default_factory():
+    parser = yada.Parser1(TrainArgsOptClassNotNoneDefaultFactory)
+    args = parser.parse_args(["--method.name", "method_c"])
+    assert args == TrainArgsOptClassNotNoneDefaultFactory(Method("method_c"))
+    args = parser.parse_args([])
+    assert args == TrainArgsOptClassNotNoneDefaultFactory(Method("method_b"))
