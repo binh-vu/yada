@@ -44,10 +44,10 @@ class YadaParser(Generic[C, R]):
 
     - Parameter declared as union:
         * only support mixed of primitive types, or one optional complex type.
-        * this should not be confused with default value, because an optional parameter can have a default value different than None.
+        * optional complex type should not be confused with default value, because an optional parameter can have a default value different than None.
         * when we have one optional complex type, to specify that complex type is None, we introduce a new
-            cmd argument `--<param_name> none` to specify when it is None. Then, all other fields of this complex
-            type must be optional
+            cmd argument `--<param_name> none` to specify when it is None. All other fields of this complex
+            type must be optional as users may want to specify only a subset of the fields.
     - Complex parameter can have a default value:
         * when a nested parameter such as MethodArgs have a default value, a default value can be different
             from the MethodArgs field's default value, so the generated cmd argument need to set the default value
@@ -60,7 +60,7 @@ class YadaParser(Generic[C, R]):
             `field_constructors` to provide a custom constructor in this case.
     - Parameter declared as a dictionary:
         * passing a dictionary is not cmd friendly, since we do not know the key, we cannot generate nested arguments
-            to parse the type correctly. Therefore, the dictionary must be able to reconstructored from a string. Use
+            to parse the type correctly. Therefore, the dictionary must be able to reconstructed from a string. Use
             `type_constructors` or `field_constructors` to provide a custom constructor in this case.
 
     Args:
@@ -79,6 +79,10 @@ class YadaParser(Generic[C, R]):
 
         field_parsers: a mapping of a nested field (separated by dot) to a function that takes a string and
             return an instance of the field's type.
+
+        namespaces: a sequence of namespaces for each corresponding class (by position), only used when classes is a sequence. This has the same affect
+            as when classes is a mapping of key and classes, but is more friendly to type hinting. If a namespace is empty, it won't be used to scope
+            the corresponding class.
     """
 
     def __init__(
@@ -88,6 +92,7 @@ class YadaParser(Generic[C, R]):
         levelsep: str = ".",
         type_parsers: Optional[Dict[Type, Callable[[str], Type]]] = None,
         field_parsers: Optional[Dict[str, Callable[[str], Type]]] = None,
+        namespaces: Optional[Sequence[str]] = None,
     ):
         self.classes = classes
         self.dash = dash
@@ -105,9 +110,13 @@ class YadaParser(Generic[C, R]):
             self.value_parser = self.add_dataclass(classes, argname)
         elif isinstance(classes, (list, tuple)):
             self.value_parser = []
-            for dclass in classes:
+            for i, dclass in enumerate(classes):
                 argname.dclass = dclass
-                self.value_parser.append(self.add_dataclass(dclass, argname))
+                if namespaces is not None and namespaces[i] != "":
+                    dargname = argname.add(namespaces[i])
+                else:
+                    dargname = argname
+                self.value_parser.append(self.add_dataclass(dclass, dargname))
         elif isinstance(classes, dict):
             self.value_parser = {}
             for namespace, dclass in classes.items():
