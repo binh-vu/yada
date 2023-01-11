@@ -63,6 +63,12 @@ class YadaParser(Generic[C, R]):
             to parse the type correctly. Therefore, the dictionary must be able to reconstructed from a string. Use
             `type_constructors` or `field_constructors` to provide a custom constructor in this case.
 
+    Some useful metadata of a field (provided by field={'metadata': {}}) that YadaParser understands:
+        - help: for displaying help message
+        - none_keywords: list of tokens that are considered equivalent to None
+        - parser: a function that takes a string and return an instance of the field's type. This is similar to
+            `field_parsers`. Note that for list, it takes a string for each item in the list.
+
     Args:
         classes: one or more classes holding parameters. Properties of each class will be converted to arguments.
             When params is a sequence of classes, the properties of all classes will be in the same namespace.
@@ -389,6 +395,8 @@ class YadaParser(Generic[C, R]):
             options["type"] = wrapper(self.type_parsers.get(field_type, field_type))
         elif argname in self.field_parsers:
             options["type"] = wrapper(self.field_parsers.get(argname, field_type))
+        elif "parser" in field.metadata:
+            options["type"] = wrapper(field.metadata["parser"])
         else:
             origin = get_origin(field_type)
             if origin is Literal:
