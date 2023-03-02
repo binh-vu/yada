@@ -25,11 +25,11 @@ from yada.ns_parser import (
     SingleFieldParser,
     NamespaceParser,
 )
+import collections.abc as abc
 from yada.exceptions import NotSupportedType
 from loguru import logger
 import argparse
 from dataclasses import is_dataclass
-
 from yada.argname import ArgumentName
 
 C = TypeVar("C")
@@ -310,7 +310,7 @@ class YadaParser(Generic[C, R]):
                 argname.get_fieldname(), default_value=default_value
             )
 
-        if origin is list or origin is set:
+        if origin is list or origin is set or origin is abc.Sequence:
             assert len(args) == 1
             self.parser.add_argument(
                 argname.get_argname(),
