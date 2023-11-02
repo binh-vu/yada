@@ -1,36 +1,32 @@
 from __future__ import annotations
+
 import argparse
+import collections.abc as abc
+from dataclasses import MISSING, Field, fields, is_dataclass
 from functools import partial
 from typing import (
     Any,
     Callable,
     Dict,
+    Generic,
     List,
     Literal,
     Optional,
     Sequence,
     Tuple,
     Type,
+    TypeVar,
     Union,
     get_args,
     get_origin,
     get_type_hints,
-    Generic,
-    TypeVar,
 )
-from dataclasses import MISSING, Field, fields, is_dataclass, Field
-from yada.string_parser import StringParser
-from yada.ns_parser import (
-    MultiFieldParser,
-    SingleFieldParser,
-    NamespaceParser,
-)
-import collections.abc as abc
-from yada.exceptions import NotSupportedType
+
 from loguru import logger
-import argparse
-from dataclasses import is_dataclass
 from yada.argname import ArgumentName
+from yada.exceptions import NotSupportedType
+from yada.ns_parser import MultiFieldParser, NamespaceParser, SingleFieldParser
+from yada.string_parser import StringParser
 
 C = TypeVar("C")
 R = TypeVar("R")
@@ -56,12 +52,12 @@ class YadaParser(Generic[C, R]):
             set previously using the rule above.
     - Parameter declared as list or set:
         * because we are using nargs to parse, we cannot generate nested argument for complex type, therefore, if
-            a parameter is a complex type, it must be able to be parsed from a string. Use `type_constructors` or
-            `field_constructors` to provide a custom constructor in this case.
+            a parameter is a complex type, it must be able to be parsed from a string. Use `type_parsers` or
+            `field_parsers` to provide a custom constructor in this case.
     - Parameter declared as a dictionary:
         * passing a dictionary is not cmd friendly, since we do not know the key, we cannot generate nested arguments
             to parse the type correctly. Therefore, the dictionary must be able to reconstructed from a string. Use
-            `type_constructors` or `field_constructors` to provide a custom constructor in this case.
+            `type_parsers` or `field_parsers` to provide a custom constructor in this case.
 
     Some useful metadata of a field (provided by field={'metadata': {}}) that YadaParser understands:
         - help: for displaying help message
